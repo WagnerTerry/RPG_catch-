@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="ISO-8859-1">
+    
+    <title>Game</title>
+</head>
+<body>
+    <script type="text/javascript">
+    //Criando o Canvas
+    var canvas = document.createElement("canvas");
+    var ctx = canvas.getContext("2d");
+    canvas.width = 512;
+    canvas.height = 480;
+    document.body.appendChild(canvas);
+
+    //Imagem de fundo
+    var bgReady = false;
+    var bgImage = new Image();
+    bgImage.onload = function(){
+        bgReady = true;
+    };
+    bgImage.src ="imagens/background.png";
+
+    //Monstro Imagem
+    var monsterReady = false;
+    var monsterImage = new Image();
+    monsterImage.onload = function(){
+        monsterReady = true;
+    };
+    monsterImage.src = "imagens/monster.png";
+
+    //Herói Imagem
+    var heroReady = false;
+    var heroImage = new Image();
+    heroImage.onload = function(){
+        heroReady = true;
+    };
+    heroImage.src = "imagens/hero.png";
+
+    //Objetos do jogo
+
+    var hero = {
+        speed: 256,//movimento em pixels por segundo
+        
+    };
+    var monster = {};
+    var monsterCaught = 0;
+
+    //Controle do teclado
+    var keysDown = {};
+    addEventListener("keydown", function(e){
+        keysDown[e.keyCode] = true;
+    }, false);
+    
+    addEventListener("keyup", function(e){
+        delete keysDown[e.keyCode];
+    }, false);
+    
+    //Reseta o jogo quando o jogador captura o monstro
+    var reset = function(){
+        hero.x = canvas.width/2;
+        hero.y = canvas.height/2;
+
+    //Coloca o monstro em posição aleatória
+        monster.x = 32 + (Math.random()*(canvas.width - 64));
+        monster.y = 32 + (Math.random()*(canvas.height - 64));
+
+    }; 
+            
+    //Atualizações dos objetos do jogo
+    var update = function(modifier){
+        if (38 in keysDown){//Jogador vai pra cima
+            hero.y -= hero.speed * modifier;
+        }
+        if (40 in keysDown){//Jogador vai pra baixo
+            hero.y += hero.speed * modifier;
+        }
+        if (37 in keysDown){//Jogador vai pra esquerda
+            hero.x -= hero.speed * modifier;
+        }
+        if (39 in keysDown){//Jogador vai pra direita
+            hero.x += hero.speed * modifier;
+        }
+
+    // Eles estão tocando?
+
+    if (
+        hero.x <= (monster.x +32)
+        && monster.x <= (hero.x +32)
+        && hero.y <= (monster.y +32)
+        && monster.y <= (hero.y +32)
+    ) {
+        ++monsterCaught;
+        reset();
+    }
+
+    };
+
+    //Desenhando
+
+    var render = function(){
+        if (bgReady){
+            //Desenha o fundo
+            ctx.drawImage(bgImage,0,0);
+        }
+        
+        if (heroReady){
+            //Desenha o herói
+            ctx.drawImage(heroImage,hero.x,hero.y);
+        }
+        
+        if (monsterReady){
+            //Desenha o Monstro
+            ctx.drawImage(monsterImage,monster.x,monster.y);
+        }
+        
+        
+        
+
+        //Placar
+        ctx.fillStyle ="rgb(250,250,250)";
+        ctx.font = "24px Helvetica";
+        ctx.textAlign = "left";
+        ctx.textBaseline = "top";
+        ctx.fillText("Goblins coletados: " + monsterCaught,32,32);
+    };
+
+    //A função Game loop
+    var main = function(){
+        var now = Date.now();
+        var delta = now - then;
+
+        update(delta/1000);
+        render();
+
+        then = now;
+
+        //Pedido para fazer isso novamente o mais rápido possível
+        requestAnimationFrame(main);
+
+    };
+
+    //Suporte entre navegadores para requestAnimationFrame
+    var w = window;
+    requestAnimationFrame = w.requestAnimationFrame || w.webkitRequestAnimationFrame || w.msRequestAnimationFrame || w.mozRequestAnimationFrame;     
+
+    //Iniciando o jogo!
+            
+    var then = Date.now();
+    
+    reset();
+    main();
+
+            
+
+</script>
+</body>
+</html>
